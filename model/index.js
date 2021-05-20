@@ -41,16 +41,22 @@ const addContact = async (body) => {
 
 const updateContact = async ({ contactId }, body) => {
   const contacts = JSON.parse(await fs.readFile(contactPath, 'utf-8'))
-  const removedContact = contacts.filter(({ id }) => String(id) !== contactId)
-  const updatedContact = {
-    id: contactId,
-    name: body.name,
-    email: body.email,
-    phone: body.phone,
+  const hasContact = contacts.some(({ id }) => String(id) === contactId)
+
+  if (hasContact) {
+    const removedContact = contacts.filter(({ id }) => String(id) !== contactId)
+    const updatedContact = {
+      id: contactId,
+      name: body.name,
+      email: body.email,
+      phone: body.phone,
+    }
+    removedContact.push(updatedContact)
+    await fs.writeFile(contactPath, JSON.stringify(removedContact, null, 2))
+    return updatedContact
+  } else {
+    return null
   }
-  removedContact.push(updatedContact)
-  await fs.writeFile(contactPath, JSON.stringify(removedContact, null, 2))
-  return updatedContact
 }
 
 module.exports = {
