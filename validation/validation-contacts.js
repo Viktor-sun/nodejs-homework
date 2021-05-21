@@ -2,7 +2,7 @@ const Joi = require('joi')
 const { HttpCode } = require('../helpers/constants')
 
 const schemaAddContact = Joi.object({
-  name: Joi.string().alphanum().min(3).max(30).required(),
+  name: Joi.string().alphanum().min(3).max(30).optional(),
 
   email: Joi.string()
     .email({
@@ -10,7 +10,7 @@ const schemaAddContact = Joi.object({
       tlds: { allow: ['com', 'net'] },
     })
     .required(),
-  phone: Joi.number().required(),
+  phone: Joi.number().integer().required(),
 })
 
 const schemaUpdateContact = Joi.object({
@@ -22,10 +22,17 @@ const schemaUpdateContact = Joi.object({
       tlds: { allow: ['com', 'net'] },
     })
     .optional(),
-  phone: Joi.number().optional(),
+  phone: Joi.number().integer().optional(),
 })
 
 const validate = (schema, body, next) => {
+  if (Object.keys(body).length === 0) {
+    return next({
+      status: HttpCode.BAD_REQUEST,
+      message: 'missing fields',
+      data: 'Bad Request',
+    })
+  }
   const { error } = schema.validate(body)
 
   if (error) {
