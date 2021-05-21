@@ -3,18 +3,20 @@ const path = require('path')
 const shortid = require('shortid')
 const contactPath = path.join(__dirname, '/contacts.json')
 
-const listContacts = async () => {
+const readContacts = async () => {
   const contacts = await fs.readFile(contactPath, 'utf-8')
   return JSON.parse(contacts)
 }
 
+const listContacts = async () => readContacts()
+
 const getContactById = async ({ contactId }) => {
-  const contacts = JSON.parse(await fs.readFile(contactPath, 'utf-8'))
+  const contacts = await readContacts()
   return await contacts.find(({ id }) => String(id) === contactId)
 }
 
 const removeContact = async ({ contactId }) => {
-  const contacts = JSON.parse(await fs.readFile(contactPath, 'utf-8'))
+  const contacts = await readContacts()
   const removedContact = contacts.filter(({ id }) => String(id) !== contactId)
   const hasContact = contacts.some(({ id }) => String(id) === contactId)
 
@@ -27,10 +29,10 @@ const removeContact = async ({ contactId }) => {
 }
 
 const addContact = async (body) => {
-  const contacts = JSON.parse(await fs.readFile(contactPath, 'utf-8'))
+  const contacts = await readContacts()
   const newContact = {
     id: shortid.generate(),
-    name: body.name,
+    name: body.name ? body.name : 'NoName',
     email: body.email,
     phone: body.phone,
   }
@@ -40,7 +42,7 @@ const addContact = async (body) => {
 }
 
 const updateContact = async ({ contactId }, body) => {
-  const contacts = JSON.parse(await fs.readFile(contactPath, 'utf-8'))
+  const contacts = await readContacts()
   const hasContact = contacts.some(({ id }) => String(id) === contactId)
 
   if (hasContact) {
