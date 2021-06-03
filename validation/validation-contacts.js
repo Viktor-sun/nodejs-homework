@@ -1,8 +1,9 @@
 const Joi = require('joi')
+const mongoose = require('mongoose')
 const { HttpCode } = require('../helpers/constants')
 
 const schemaAddContact = Joi.object({
-  name: Joi.string().alphanum().min(3).max(30).optional(),
+  name: Joi.string().min(3).max(30).optional(),
 
   email: Joi.string()
     .email({
@@ -11,10 +12,11 @@ const schemaAddContact = Joi.object({
     })
     .required(),
   phone: Joi.number().integer().required(),
+  favorite: Joi.boolean().optional(),
 })
 
 const schemaUpdateContact = Joi.object({
-  name: Joi.string().alphanum().min(3).max(30).optional(),
+  name: Joi.string().min(3).max(30).optional(),
 
   email: Joi.string()
     .email({
@@ -23,6 +25,11 @@ const schemaUpdateContact = Joi.object({
     })
     .optional(),
   phone: Joi.number().integer().optional(),
+  favorite: Joi.boolean().optional(),
+}).or('name', 'email', 'phone', 'favorite')
+
+const schemaUpdateStatusContact = Joi.object({
+  favorite: Joi.boolean().required(),
 })
 
 const validate = (schema, body, next) => {
@@ -50,3 +57,16 @@ module.exports.validateAddContacts = (req, res, next) =>
 
 module.exports.validateUpdateContacts = (req, res, next) =>
   validate(schemaUpdateContact, req.body, next)
+
+module.exports.validateUpdateStatusContacts = (req, res, next) =>
+  validate(schemaUpdateStatusContact, req.body, next)
+
+module.exports.validateMongoId = (req, _res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.contactId)) {
+    return next({
+      status: 400,
+      message: 'Invalid ObjectId',
+    })
+  }
+  next()
+}
