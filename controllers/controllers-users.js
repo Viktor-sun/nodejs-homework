@@ -40,7 +40,8 @@ const login = async (req, res, next) => {
       message: 'Email or password is wrong',
     })
   }
-  const userId = user.id
+
+  const userId = user._id
   const payload = { userId }
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '3h' })
   await usersRepository.updateToken(userId, token)
@@ -52,9 +53,31 @@ const login = async (req, res, next) => {
   })
 }
 
-const logout = async (req, res, next) => {}
+const logout = async (req, res, next) => {
+  try {
+    const id = req.user._id
+    await usersRepository.updateToken(id, null)
+    return res.status(HttpCode.NO_CONTENT).json({})
+  } catch (e) {
+    next(e)
+  }
+}
 
-const getCurrent = async (req, res, next) => {}
+const getCurrent = async (req, res, next) => {
+  try {
+    const { email, subscription } = req.user
+    return res.status(HttpCode.OK).json({
+      status: 'success',
+      code: HttpCode.OK,
+      user: {
+        email,
+        subscription,
+      },
+    })
+  } catch (e) {
+    next(e)
+  }
+}
 
 module.exports = {
   signup,
