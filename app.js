@@ -3,7 +3,9 @@ const app = express()
 const logger = require('morgan')
 const cors = require('cors')
 const { HttpCode } = require('./helpers/constants')
+const apiLimiter = require('./helpers/apiLimiter')
 const helmet = require('helmet')
+const rateLimit = require('express-rate-limit')
 
 const contactsRouter = require('./routes/api/api-contacts')
 const usersRouter = require('./routes/api/api-users')
@@ -15,6 +17,7 @@ app.use(logger(formatsLogger))
 app.use(cors())
 app.use(express.json({ limit: 10000 }))
 
+app.use('/api/', rateLimit(apiLimiter))
 app.use('/api/contacts', contactsRouter)
 app.use('/api/users', usersRouter)
 
