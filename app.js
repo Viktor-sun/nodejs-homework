@@ -6,6 +6,7 @@ const { HttpCode } = require('./helpers/constants')
 const apiLimiter = require('./helpers/apiLimiter')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
+const boolParser = require('express-query-boolean')
 
 const contactsRouter = require('./routes/api/api-contacts')
 const usersRouter = require('./routes/api/api-users')
@@ -16,6 +17,7 @@ app.use(helmet())
 app.use(logger(formatsLogger))
 app.use(cors())
 app.use(express.json({ limit: 10000 }))
+app.use(boolParser())
 
 app.use('/api/', rateLimit(apiLimiter))
 app.use('/api/contacts', contactsRouter)
@@ -37,6 +39,10 @@ app.use((err, _req, res, _next) => {
     code: err.status,
     message: err.message,
   })
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
 })
 
 module.exports = app
