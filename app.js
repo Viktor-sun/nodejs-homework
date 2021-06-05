@@ -3,22 +3,31 @@ const app = express()
 const logger = require('morgan')
 const cors = require('cors')
 const { HttpCode } = require('./helpers/constants')
+const apiLimiter = require('./helpers/apiLimiter')
+const helmet = require('helmet')
+const rateLimit = require('express-rate-limit')
+const boolParser = require('express-query-boolean')
 
-const contactsRouter = require('./routes/api/contacts')
+const contactsRouter = require('./routes/api/api-contacts')
+const usersRouter = require('./routes/api/api-users')
 
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
+app.use(helmet())
 app.use(logger(formatsLogger))
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: 10000 }))
+app.use(boolParser())
 
+app.use('/api/', rateLimit(apiLimiter))
 app.use('/api/contacts', contactsRouter)
+app.use('/api/users', usersRouter)
 
 app.use((req, res, _next) => {
   res.status(HttpCode.NOT_FOUND).json({
     status: 'error',
     code: HttpCode.NOT_FOUND,
-    message: `Not found! You need use api on routes ${req.baseUrl}/api/contacts`,
+    message: `Not found! You need use api on routes ${req.baseUrl}/api/contacts or /api/users`,
     data: 'Not Found',
   })
 })
@@ -30,6 +39,10 @@ app.use((err, _req, res, _next) => {
     code: err.status,
     message: err.message,
   })
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
 })
 
 module.exports = app

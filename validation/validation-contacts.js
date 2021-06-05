@@ -8,10 +8,12 @@ const schemaAddContact = Joi.object({
   email: Joi.string()
     .email({
       minDomainSegments: 2,
-      tlds: { allow: ['com', 'net'] },
+      tlds: { allow: ['com', 'net', 'mail', 'gmail', 'org'] },
     })
     .required(),
-  phone: Joi.number().integer().required(),
+  phone: Joi.string()
+    .pattern(/[(][0-9]{3}[)] [0-9]{3}-[0-9]{4}/)
+    .optional(),
   favorite: Joi.boolean().optional(),
 })
 
@@ -21,10 +23,12 @@ const schemaUpdateContact = Joi.object({
   email: Joi.string()
     .email({
       minDomainSegments: 2,
-      tlds: { allow: ['com', 'net'] },
+      tlds: { allow: ['com', 'net', 'mail', 'gmail', 'org'] },
     })
     .optional(),
-  phone: Joi.number().integer().optional(),
+  phone: Joi.string()
+    .pattern(/[(][0-9]{3}[)] [0-9]{3}-[0-9]{4}/)
+    .optional(),
   favorite: Joi.boolean().optional(),
 }).or('name', 'email', 'phone', 'favorite')
 

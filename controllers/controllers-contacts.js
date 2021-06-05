@@ -1,13 +1,18 @@
 const { HttpCode } = require('../helpers/constants')
 const contactsRepository = require('../repositories/repository-contacts')
 
-const getAll = async (_req, res, next) => {
+const getAll = async (req, res, next) => {
   try {
-    const contacts = await contactsRepository.listContacts()
+    const userId = req.user._id
+
+    const { docs: contacts, ...rest } = await contactsRepository.listContacts(
+      userId,
+      req.query
+    )
     res.status(HttpCode.OK).json({
       status: 'success',
       code: HttpCode.OK,
-      data: { contacts },
+      data: { contacts, ...rest },
     })
   } catch (error) {
     next(error)
@@ -16,7 +21,9 @@ const getAll = async (_req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
+    const userId = req.user._id
     const contact = await contactsRepository.getContactById(
+      userId,
       req.params.contactId
     )
 
@@ -41,7 +48,11 @@ const getById = async (req, res, next) => {
 
 const remove = async (req, res, next) => {
   try {
-    const contact = await contactsRepository.removeContact(req.params.contactId)
+    const userId = req.user._id
+    const contact = await contactsRepository.removeContact(
+      userId,
+      req.params.contactId
+    )
 
     if (contact) {
       return res.status(HttpCode.OK).json({
@@ -63,7 +74,8 @@ const remove = async (req, res, next) => {
 
 const add = async (req, res, next) => {
   try {
-    const contact = await contactsRepository.addContact(req.body)
+    const userId = req.user._id
+    const contact = await contactsRepository.addContact(userId, req.body)
     res.status(HttpCode.OK).json({
       status: 'success',
       code: HttpCode.CREATED,
@@ -79,7 +91,9 @@ const add = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
+    const userId = req.user._id
     const contact = await contactsRepository.updateContact(
+      userId,
       req.params.contactId,
       req.body
     )
