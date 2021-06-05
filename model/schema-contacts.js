@@ -1,4 +1,5 @@
 const { Schema, model, SchemaTypes } = require('mongoose')
+const mongoosePaginate = require('mongoose-paginate-v2')
 
 const schemaContacts = new Schema(
   {
@@ -37,6 +38,8 @@ const schemaContacts = new Schema(
 schemaContacts.virtual('info').get(function () {
   return `${this.name} has this number ${this.phone}`
 })
+
+schemaContacts.plugin(mongoosePaginate)
 
 const Contact = model('contact', schemaContacts)
 
