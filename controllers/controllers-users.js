@@ -2,6 +2,9 @@ const usersRepository = require('../repositories/repository-users')
 const { HttpCode } = require('../helpers/constants')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
+const UploadAvatarService = require('../services/local-upload')
+const fs = require('fs/promises')
+const path = require('path')
 const SECRET_KEY = process.env.SECRET_WORD
 
 const signup = async (req, res, next) => {
@@ -16,14 +19,13 @@ const signup = async (req, res, next) => {
       })
     }
 
-    const { id, email, subscription } = await usersRepository.createUser(
-      req.body
-    )
+    const { id, email, subscription, avatarURL } =
+      await usersRepository.createUser(req.body)
 
     return res.status(HttpCode.CREATED).json({
       status: 'success',
       code: HttpCode.CREATED,
-      user: { id, email, subscription },
+      user: { id, email, subscription, avatarURL },
     })
   } catch (e) {
     next(e)
@@ -45,11 +47,16 @@ const login = async (req, res, next) => {
   const payload = { userId }
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '3h' })
   await usersRepository.updateToken(userId, token)
+  const { email, subscription, avatarURL } = user
   return res.json({
     status: 'success',
     code: HttpCode.OK,
     token,
-    user: { email: user.email, subscription: user.subscription },
+    user: {
+      email,
+      subscription,
+      avatarURL,
+    },
   })
 }
 
@@ -65,13 +72,14 @@ const logout = async (req, res, next) => {
 
 const getCurrent = async (req, res, next) => {
   try {
-    const { email, subscription } = req.user
+    const { email, subscription, avatarURL } = req.user
     return res.status(HttpCode.OK).json({
       status: 'success',
       code: HttpCode.OK,
       user: {
         email,
         subscription,
+        avatarURL,
       },
     })
   } catch (e) {
@@ -97,10 +105,37 @@ const updateSubscription = async (req, res, next) => {
   }
 }
 
+const avatars = async (req, res, next) => {
+  try {
+    const id = req.user._id
+    const AVATAR_OF_USERS = path.join(
+      __dirname,
+      '../',
+      `/public/${process.env.AVATAR_OF_USERS}`
+    )
+
+    const uploads = new UploadAvatarService(AVATAR_OF_USERS)
+    const avatarUrl = await uploads.saveAvatar({
+      idUser: id.toString(),
+      file: req.file,
+    })
+    try {
+      await fs.unlink(path.join(AVATAR_OF_USERS, req.user.avatarURL))
+    } catch (e) {
+      console.log(e.message)
+    }
+    await usersRepository.updateAvatar(id, avatarUrl)
+    res.json({ status: 'success', code: HttpCode.OK, data: { avatarUrl } })
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
   signup,
   login,
   logout,
   getCurrent,
   updateSubscription,
+  avatars,
 }
