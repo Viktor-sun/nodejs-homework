@@ -2,9 +2,12 @@ const usersRepository = require('../repositories/repository-users')
 const { HttpCode } = require('../helpers/constants')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
-const UploadAvatarService = require('../services/local-upload')
 const fs = require('fs/promises')
+
 const path = require('path')
+const UploadAvatarService = require('../services/local-upload')
+// const UploadAvatarService = require('../services/cloud-upload')
+
 const SECRET_KEY = process.env.SECRET_WORD
 
 const signup = async (req, res, next) => {
@@ -130,6 +133,25 @@ const avatars = async (req, res, next) => {
     next(error)
   }
 }
+
+/* for cloud upload
+const avatars = async (req, res, next) => {
+  try {
+    const id = req.user._id
+    const uploads = new UploadAvatarService()
+    const { idCloudAvatar, avatarUrl } = await uploads.saveAvatar(
+      req.file.path,
+      req.user.idCloudAvatar
+    )
+
+    await fs.unlink(req.file.path)
+    await usersRepository.updateAvatar(id, avatarUrl, idCloudAvatar)
+    res.json({ status: 'success', code: HttpCode.OK, data: { avatarUrl } })
+  } catch (error) {
+    next(error)
+  }
+}
+*/
 
 module.exports = {
   signup,
