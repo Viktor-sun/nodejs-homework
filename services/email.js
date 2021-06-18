@@ -1,4 +1,5 @@
 const Mailgen = require('mailgen')
+require('dotenv').config()
 
 class EmailService {
   constructor(env, sender) {
@@ -9,7 +10,7 @@ class EmailService {
         break
 
       case 'production':
-        this.link = 'link fro production'
+        this.link = process.env.LINK_FOR_PRODUCTION
         break
       default:
         this.link = 'http://localhost:3000'

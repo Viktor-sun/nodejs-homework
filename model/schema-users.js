@@ -35,6 +35,10 @@ const schemaUsers = new Schema(
         return gravatar.url(this.email, { s: '250' }, true)
       },
     },
+    idCloudAvatar: {
+      type: String,
+      default: null,
+    },
     isVerified: {
       type: Boolean,
       default: false,
@@ -45,6 +49,7 @@ const schemaUsers = new Schema(
       default: nanoid(),
     },
   },
+
   {
     versionKey: false,
     timestamps: true,

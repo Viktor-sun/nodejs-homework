@@ -1,10 +1,9 @@
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
 const fs = require('fs/promises')
-const path = require('path')
 const usersRepository = require('../repositories/repository-users')
 const { HttpCode } = require('../helpers/constants')
-const UploadAvatarService = require('../services/local-upload')
+const UploadAvatarService = require('../services/cloud-upload')
 const EmailService = require('../services/email')
 const CreateSender = require('../services/email-sender')
 
@@ -121,23 +120,13 @@ const updateSubscription = async (req, res, next) => {
 const avatars = async (req, res, next) => {
   try {
     const id = req.user._id
-    const AVATAR_OF_USERS = path.join(
-      __dirname,
-      '../',
-      `/public/${process.env.AVATAR_OF_USERS}`
+    const uploads = new UploadAvatarService()
+    const { idCloudAvatar, avatarUrl } = await uploads.saveAvatar(
+      req.file.path,
+      req.user.idCloudAvatar
     )
-
-    const uploads = new UploadAvatarService(AVATAR_OF_USERS)
-    const avatarUrl = await uploads.saveAvatar({
-      idUser: id.toString(),
-      file: req.file,
-    })
-    try {
-      await fs.unlink(path.join(AVATAR_OF_USERS, req.user.avatarURL))
-    } catch (e) {
-      console.log(e.message)
-    }
-    await usersRepository.updateAvatar(id, avatarUrl)
+    await fs.unlink(req.file.path)
+    await usersRepository.updateAvatar(id, avatarUrl, idCloudAvatar)
     res.json({ status: 'success', code: HttpCode.OK, data: { avatarUrl } })
   } catch (error) {
     next(error)

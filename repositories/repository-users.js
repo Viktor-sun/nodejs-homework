@@ -25,8 +25,8 @@ const updateSubscription = async (id, subscription) => {
   return await User.updateOne({ _id: id }, { subscription })
 }
 
-const updateAvatar = async (id, avatarURL) => {
-  return await User.updateOne({ _id: id }, { avatarURL })
+const updateAvatar = async (id, avatarURL, idCloudAvatar = null) => {
+  return await User.updateOne({ _id: id }, { avatarURL, idCloudAvatar })
 }
 
 const updateTokenVerify = async (id, isVerified, verifyToken) => {
