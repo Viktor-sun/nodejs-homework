@@ -5,6 +5,7 @@ const {
   validateSignup,
   validateLogin,
   validateSubscription,
+  validateVerify,
 } = require('../../validation/validation-users')
 const guard = require('../../helpers/guard')
 const upload = require('../../helpers/upload-multer')
@@ -22,5 +23,8 @@ router
     controllerUsers.updateSubscription
   )
   .patch('/avatars', guard, upload.single('avatar'), controllerUsers.avatars)
+
+  .get('/verify/:verificationToken', controllerUsers.verify)
+  .post('/verify', validateVerify, controllerUsers.repeatEmailVerification)
 
 module.exports = router
