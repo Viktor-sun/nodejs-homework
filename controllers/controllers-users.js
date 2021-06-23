@@ -133,6 +133,36 @@ const avatars = async (req, res, next) => {
   }
 }
 
+/*
+const path = require('path')
+const UploadAvatarService = require('../services/local-upload')
+const avatars = async (req, res, next) => {
+  try {
+    const id = req.user._id
+    const AVATAR_OF_USERS = path.join(
+      __dirname,
+      '../',
+      `/public/${process.env.AVATAR_OF_USERS}`
+    )
+
+    const uploads = new UploadAvatarService(AVATAR_OF_USERS)
+    const avatarUrl = await uploads.saveAvatar({
+      idUser: id.toString(),
+      file: req.file,
+    })
+    try {
+      await fs.unlink(path.join(AVATAR_OF_USERS, req.user.avatarURL))
+    } catch (e) {
+      console.log(e.message)
+    }
+    await usersRepository.updateAvatar(id, avatarUrl)
+    res.json({ status: 'success', code: HttpCode.OK, data: { avatarUrl } })
+  } catch (error) {
+    next(error)
+  }
+}
+*/
+
 const verify = async (req, res, next) => {
   try {
     const user = await usersRepository.findByVerifyToken(
