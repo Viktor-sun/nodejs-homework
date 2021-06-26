@@ -10,7 +10,7 @@ class EmailService {
         break
 
       case 'production':
-        this.link = process.env.LINK_FOR_PRODUCTION
+        this.link = 'http://localhost:3000'
         break
       default:
         this.link = 'http://localhost:3000'

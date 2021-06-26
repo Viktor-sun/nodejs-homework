@@ -1,0 +1,26 @@
+version: '3.9' # optional since v1.27.0
+services:
+  nodejs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nodejs
+    container_name: api-contacts
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - '3000:3000'
+    networks:
+      - app-network
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
